@@ -40,7 +40,7 @@ def makeLabels(comments):
         # 规范情感取值以适应机器学习模型
         senti = int(tmp[0]) # 两种中立均规范为0
         senti = standard_sentiment(senti) # 其余情感值规范
-
+        # senti = tmp[0]
         res.append(str(senti))
         TFs.append(tmp[1])
         TF_IDFs.append(tmp[2])
@@ -134,12 +134,12 @@ def standard_sentiment(senti):
 
 
 def IDF_calculate(word):
-    # 初始设定为1，相当于避免分母为0做平滑处理
+    # 初始设定为1，相当于避免分母为0做平滑处理，其后公式中总数+1同为平滑处理
     countI = 1
     for comment in comments:
         if word in comment:
             countI += 1
-    countI = len(comments)/countI
+    countI = (len(comments)+1)/countI
     countI = np.log(countI)
     return countI
 
@@ -190,7 +190,7 @@ def cleanData(data):
     tmp = []
     for i in range(len(data)):
         if data[i][1] == 0 and not data[i][4]:
-            # tmp.append(data[i])
+            tmp.append(data[i])
             pass
         else:
             tmp.append(data[i])
@@ -228,17 +228,20 @@ def train_model():
     pipe = make_pipeline(vector, nb)
     res = cross_val_score(pipe, X_train, y_train, cv=5, scoring='accuracy').mean()
     print(res)
-
+    # 输出测试集准确率
     pipe.fit(X_train, y_train)
     pipe.predict(X_test)
     y_pred = pipe.predict(X_test)
     res = metrics.accuracy_score(y_test, y_pred)
     print(res)
+    # 输出混淆矩阵
+    res = metrics.confusion_matrix(y_test, y_pred)
+    print(res)
     exit(2)
 
 
 if "__main__" == __name__:
-    # train_model()
+    train_model()
     df = pd.read_csv("./Resources/originData.csv", encoding = "utf-8")
     # print(df.head())
     # print(df.shape)
@@ -265,6 +268,7 @@ if "__main__" == __name__:
     res = np.array(df).tolist()
     for i in range(len(res)):
         print("更新进度: {}/{}".format(i, len(res)))
+        res[i][1] = np.log10(res[i][1] + 1)
         res[i][4] = TFs[i]
         res[i][5] = TF_IDFs[i]
         res[i][6] = Sentiment[i]
