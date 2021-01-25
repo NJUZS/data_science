@@ -1,1 +1,3 @@
-
+rawdata为抽样数据
+logdata为拟合结果
+result为相关参数拟合值
