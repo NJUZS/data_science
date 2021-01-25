@@ -32,5 +32,5 @@
 
 ##### 感谢您的访问！本项目还有很多不足，请多批评指正、不吝赐教。
 
-![https://github.com/NJUZS/data_science/blob/main/visualized_output/wordcloud/stage_1.png]()
+
 
