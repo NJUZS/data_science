@@ -200,6 +200,35 @@ def cleanData(data):
     return data
 
 
+def testsForCut():
+    df = pd.read_csv("./Resources/dataTest.csv", encoding="utf-8")
+    comments = df['Comment']
+    data = df.values.tolist()
+    # 初始化自带的停用词表
+    CoreStopWordDictionary = JClass('com.hankcs.hanlp.dictionary.stopword.CoreStopWordDictionary')
+    for i in range(1,len(data)):
+        comment = comments[i]
+        res = HanLP.segment(comment)
+        # 启用自带的停用词表
+        CoreStopWordDictionary.apply(res)
+        cutComment = ""
+        for word in res:
+            # 去除词性
+            word = str(word)[0:str(word).rfind('/')]
+            word = re.sub("[A-Za-z0-9]", "", word)
+            cutComment += word + ' '
+        data[i][2] = cutComment
+    res = [["Comment", "Sentiment", "Cuts"]]
+    res.extend(data)
+    with open("./Resources/dataTest.csv", 'w', newline='', encoding='utf-8-sig') as csvFile:
+        writer = csv.writer(csvFile)
+        for row in res:
+            writer.writerow(row)
+        csvFile.close()
+    print("分词完成！")
+
+
+
 # 训练模型
 def train_model():
     df = pd.read_csv("./Resources/tmpData.csv", encoding = "utf-8")
@@ -230,13 +259,30 @@ def train_model():
     print(res)
     # 输出测试集准确率
     pipe.fit(X_train, y_train)
-    pipe.predict(X_test)
+    # pipe.predict(X_test)
     y_pred = pipe.predict(X_test)
     res = metrics.accuracy_score(y_test, y_pred)
     print(res)
     # 输出混淆矩阵
     res = metrics.confusion_matrix(y_test, y_pred)
     print(res)
+
+    testsForCut()
+    dt = pd.read_csv("./Resources/dataTest.csv", encoding = "utf-8")
+    z = dt['Cuts']
+    z.fillna('', inplace=True)
+    res = pipe.predict(z)
+    data = dt.values.tolist()
+    for i in range(len(data)):
+        data[i][1] = res[i]
+    res = [["Comment","Sentiment","Cuts"]]
+    res.extend(data)
+    with open("./Resources/dataTest.csv", 'w', newline='', encoding='utf-8-sig') as csvFile:
+        writer = csv.writer(csvFile)
+        for row in res:
+            writer.writerow(row)
+        csvFile.close()
+    print("预测已写入！")
     exit(2)
 
 
