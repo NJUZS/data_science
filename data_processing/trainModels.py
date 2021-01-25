@@ -140,7 +140,7 @@ def IDF_calculate(word):
         if word in comment:
             countI += 1
     countI = (len(comments)+1)/countI
-    countI = np.log(countI)
+    countI = np.log(countI) + 1
     return countI
 
 
@@ -241,7 +241,7 @@ def train_model():
 
 
 if "__main__" == __name__:
-    train_model()
+    # train_model()
     df = pd.read_csv("./Resources/originData.csv", encoding = "utf-8")
     # print(df.head())
     # print(df.shape)
